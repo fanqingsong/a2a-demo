@@ -1,3 +1,4 @@
+import os
 import uvicorn
 
 from a2a.server.apps import A2AStarletteApplication
@@ -15,6 +16,8 @@ from a2a.types import (
     Message
 )
 import openai
+
+PORT = os.getenv("PORT", 9999)
 
 class FinanceAgent:
     """Finance Agent."""
@@ -43,7 +46,7 @@ skill = AgentSkill(
 public_agent_card = AgentCard(
     name='Finance Agent',
     description='The Finance Agent is in charge of the ERP system',
-    url='http://localhost:9999/',
+    url=f'http://localhost:{PORT}/',
     version='1.0.0',
     defaultInputModes=['text'],
     defaultOutputModes=['text'],
@@ -85,7 +88,7 @@ def main():
         extended_agent_card=public_agent_card,
     )
 
-    uvicorn.run(server.build(), host='0.0.0.0', port=9999)
+    uvicorn.run(server.build(), host='0.0.0.0', port=PORT)
 
 if __name__ == '__main__':
     main()
