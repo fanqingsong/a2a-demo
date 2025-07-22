@@ -1,25 +1,6 @@
-import {
-  A2AClient,
-  AgentCard,
-  SendMessageResponse,
-  SendMessageSuccessResponse,
-} from "@a2a-js/sdk";
-import {
-  BaseEvent,
-  EventType,
-  Message,
-  RunAgentInput,
-  TextMessageChunkEvent,
-} from "@ag-ui/client";
-import {
-  CoreMessage,
-  LanguageModel,
-  processDataStream,
-  streamText,
-  ToolSet,
-} from "ai";
-import { tool, generateText } from "ai";
-import { z } from "zod";
+import { AgentCard } from "@a2a-js/sdk";
+import { Message } from "@ag-ui/client";
+import { CoreMessage } from "ai";
 
 export const createSystemPrompt = (
   agentCards: AgentCard[],
@@ -72,12 +53,20 @@ export function convertMessagesToVercelAISDKMessages(
 
   for (const message of messages) {
     if (message.role === "assistant") {
-      const parts: any[] = message.content
-        ? [{ type: "text", text: message.content }]
+      const parts: Array<
+        | { type: "text"; text: string }
+        | {
+            type: "tool-call";
+            toolCallId: string;
+            toolName: string;
+            args: unknown;
+          }
+      > = message.content
+        ? [{ type: "text" as const, text: message.content }]
         : [];
       for (const toolCall of message.toolCalls ?? []) {
         parts.push({
-          type: "tool-call",
+          type: "tool-call" as const,
           toolCallId: toolCall.id,
           toolName: toolCall.function.name,
           args: JSON.parse(toolCall.function.arguments),

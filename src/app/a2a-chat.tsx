@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "@copilotkit/react-ui/styles.css";
 
 import {
@@ -44,31 +44,31 @@ interface Table {
 }
 
 const Chat = ({ onNotification }: { onNotification?: () => void }) => {
-  const [background, setBackground] = useState<string>(
-    "--copilot-kit-background-color"
-  );
-  const [lastMessageCount, setLastMessageCount] = useState(0);
   const { state } = useCoAgent({ name: "a2a_chat" });
 
   const { isLoading, visibleMessages } = useCopilotChat();
+
+  const handleNotification = useCallback(() => {
+    onNotification?.();
+  }, [onNotification]);
 
   useEffect(() => {
     if (
       visibleMessages.length > 0 &&
       (!isLoading ||
-        (visibleMessages[visibleMessages.length - 1] as any).name ===
-          "pickTable")
+        (
+          visibleMessages[visibleMessages.length - 1] as unknown as {
+            name?: string;
+          }
+        ).name === "pickTable")
     ) {
-      console.log("onNotification");
-      onNotification?.();
+      handleNotification();
     }
-  }, [isLoading, JSON.stringify(visibleMessages)]);
+  }, [isLoading, visibleMessages, handleNotification]);
 
   React.useEffect(() => {
-    if (state?.a2aMessages) {
-      setLastMessageCount(state.a2aMessages.length);
-    }
-  }, [state?.a2aMessages?.length]);
+    // This effect runs when a2aMessages changes - no specific action needed
+  }, [state?.a2aMessages]);
 
   useCoAgentStateRender<A2AChatState>({
     name: "a2a_chat",
@@ -156,8 +156,7 @@ const Chat = ({ onNotification }: { onNotification?: () => void }) => {
         description: `A JSON encoded array of tables. This is an example of the format: [{ "name": "Table 1", "seats": [{ "seatNumber": 1, "status": "available" }, { "seatNumber": 2, "status": "occupied", "name": "Alice" }] }, { "name": "Table 2", "seats": [{ "seatNumber": 1, "status": "available" }, { "seatNumber": 2, "status": "available" }] }, { "name": "Table 3", "seats": [{ "seatNumber": 1, "status": "occupied", "name": "Bob" }, { "seatNumber": 2, "status": "available" }] }]`,
       },
     ],
-    renderAndWaitForResponse({ args, respond }) {
-      console.log("args", args);
+    renderAndWaitForResponse: function TablePicker({ args, respond }) {
       const [selectedSeat, setSelectedSeat] = useState<{
         tableIndex: number;
         seatNumber: number;
@@ -366,10 +365,7 @@ const Chat = ({ onNotification }: { onNotification?: () => void }) => {
   });
 
   return (
-    <div
-      className="flex justify-center items-center h-full w-full"
-      style={{ background }}
-    >
+    <div className="flex justify-center items-center h-full w-full">
       <div className="w-8/10 h-8/10 rounded-lg">
         <CopilotChat
           className="h-full rounded-2xl"

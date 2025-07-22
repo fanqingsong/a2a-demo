@@ -10,8 +10,8 @@ import {
   ToolCallChunkEvent,
   ToolCallResultEvent,
 } from "@ag-ui/client";
-import { A2AClient, SendMessageSuccessResponse } from "@a2a-js/sdk";
-import { Observable } from "rxjs";
+import { A2AClient, SendMessageSuccessResponse, AgentCard } from "@a2a-js/sdk";
+import { Observable, Observer } from "rxjs";
 import {
   LanguageModel,
   processDataStream,
@@ -42,7 +42,7 @@ interface AgentState {
 
 interface AgentInfo {
   client: A2AClient;
-  card: any;
+  card: unknown;
 }
 
 export class A2AClientAgent extends AbstractAgent {
@@ -65,7 +65,10 @@ export class A2AClientAgent extends AbstractAgent {
     });
   }
 
-  private async executeRun(input: RunAgentInput, observer: any): Promise<void> {
+  private async executeRun(
+    input: RunAgentInput,
+    observer: Observer<BaseEvent>
+  ): Promise<void> {
     const state = this.initializeState();
 
     this.emitRunStarted(input, observer);
@@ -85,23 +88,38 @@ export class A2AClientAgent extends AbstractAgent {
     return { a2aMessages: [] };
   }
 
-  private emitRunStarted(input: RunAgentInput, observer: any): void {
+  private emitRunStarted(
+    input: RunAgentInput,
+    observer: Observer<BaseEvent>
+  ): void {
     observer.next({
       type: EventType.RUN_STARTED,
-      threadId: input.threadId,
-      runId: input.runId,
+      timestamp: Date.now(),
+      rawEvent: {
+        threadId: input.threadId,
+        runId: input.runId,
+      },
     });
   }
 
-  private emitRunFinished(input: RunAgentInput, observer: any): void {
+  private emitRunFinished(
+    input: RunAgentInput,
+    observer: Observer<BaseEvent>
+  ): void {
     observer.next({
       type: EventType.RUN_FINISHED,
-      threadId: input.threadId,
-      runId: input.runId,
+      timestamp: Date.now(),
+      rawEvent: {
+        threadId: input.threadId,
+        runId: input.runId,
+      },
     });
   }
 
-  private emitStateSnapshot(state: AgentState, observer: any): void {
+  private emitStateSnapshot(
+    state: AgentState,
+    observer: Observer<BaseEvent>
+  ): void {
     observer.next({
       type: EventType.STATE_SNAPSHOT,
       snapshot: state,
@@ -125,7 +143,9 @@ export class A2AClientAgent extends AbstractAgent {
     input: RunAgentInput,
     agents: Record<string, AgentInfo>
   ) {
-    const agentCards = Object.values(agents).map(({ card }) => card);
+    const agentCards = Object.values(agents).map(
+      ({ card }) => card as AgentCard
+    );
     const systemPrompt = createSystemPrompt(agentCards, this.instructions);
 
     const messages = convertMessagesToVercelAISDKMessages(input.messages);
@@ -148,7 +168,7 @@ export class A2AClientAgent extends AbstractAgent {
     input: RunAgentInput,
     agents: Record<string, AgentInfo>,
     state: AgentState,
-    observer: any
+    observer: Observer<BaseEvent>
   ): Record<string, Tool> {
     const sendMessageTool = this.createSendMessageTool(agents, state, observer);
 
@@ -169,7 +189,7 @@ export class A2AClientAgent extends AbstractAgent {
   private createSendMessageTool(
     agents: Record<string, AgentInfo>,
     state: AgentState,
-    observer: any
+    observer: Observer<BaseEvent>
   ) {
     return tool({
       description:
@@ -190,8 +210,14 @@ export class A2AClientAgent extends AbstractAgent {
         },
         required: ["agentName", "task"],
       }),
-      // @ts-ignore
-      execute: async ({ agentName, task }) => {
+      // @ts-expect-error - Tool execute function type isn't properly inferred
+      execute: async ({
+        agentName,
+        task,
+      }: {
+        agentName: string;
+        task: string;
+      }) => {
         // Log outgoing message
         state.a2aMessages.push({
           name: "Agent",
@@ -249,9 +275,9 @@ export class A2AClientAgent extends AbstractAgent {
   }
 
   private async processStreamResponse(
-    messages: any[],
+    messages: Parameters<typeof streamText>[0]["messages"],
     tools: Record<string, Tool>,
-    observer: any
+    observer: Observer<BaseEvent>
   ): Promise<void> {
     const response = streamText({
       model: this.model,
@@ -267,7 +293,7 @@ export class A2AClientAgent extends AbstractAgent {
       stream: response.toDataStreamResponse({
         getErrorMessage: (error) => {
           console.log("ERROR", error);
-          return JSON.stringify(error);
+          return error instanceof Error ? error.message : "Unknown error";
         },
       }).body!,
       onTextPart: (text) => {
@@ -317,7 +343,7 @@ export class A2AClientAgent extends AbstractAgent {
   private handleRunError(
     error: unknown,
     input: RunAgentInput,
-    observer: any
+    observer: Observer<BaseEvent>
   ): void {
     observer.next({
       type: EventType.RUN_ERROR,

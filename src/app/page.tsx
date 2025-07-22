@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, MessageSquare, Users, Settings } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Plus, MessageSquare, Settings } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import A2AChat from "./a2a-chat";
 import "./style.css";
 
@@ -21,19 +21,15 @@ function Page() {
   const activeTabRef = useRef(activeTab);
 
   // Function to add notification badge to a specific tab
-  const addNotification = useCallback(
-    (tabId: string) => {
-      // Only add notification if the tab is not currently active
-      console.log("addNotification", tabId, activeTabRef.current);
-      if (tabId !== activeTabRef.current) {
-        setTabNotifications((prev) => ({
-          ...prev,
-          [tabId]: true,
-        }));
-      }
-    },
-    [activeTabRef.current]
-  );
+  const addNotification = useCallback((tabId: string) => {
+    // Only add notification if the tab is not currently active
+    if (tabId !== activeTabRef.current) {
+      setTabNotifications((prev) => ({
+        ...prev,
+        [tabId]: true,
+      }));
+    }
+  }, []);
 
   // Clear notification when tab becomes active
   const handleTabChange = useCallback((tabId: string) => {
@@ -62,7 +58,7 @@ function Page() {
     });
 
     setChatInstances(newInstances);
-  }, [tabs, addNotification]);
+  }, [tabs, addNotification, chatInstances]);
 
   const handleAddTab = () => {
     const newTab = {
