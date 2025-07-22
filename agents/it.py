@@ -18,6 +18,7 @@ from a2a.types import (
 import openai
 
 PORT = os.getenv("PORT", "9998")
+URL = os.getenv("URL", f"http://localhost:{PORT}")
 
 class ITAgent:
     """IT Agent."""
@@ -46,7 +47,7 @@ skill = AgentSkill(
 public_agent_card = AgentCard(
     name='IT Agent',
     description='The IT Agent is in charge of the IT infrastructure. Set up new accounts, provision new devices, etc.',
-    url=f'http://localhost:{PORT}/',
+    url=f'{URL}/',
     version='1.0.0',
     defaultInputModes=['text'],
     defaultOutputModes=['text'],

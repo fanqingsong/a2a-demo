@@ -18,6 +18,7 @@ from a2a.types import (
 import openai
 
 PORT = os.getenv("PORT", "9997")
+URL = os.getenv("URL", f"http://localhost:{PORT}")
 
 class BuildingsManagementAgent:
     """Buildings Management Agent."""
@@ -61,7 +62,7 @@ skill = AgentSkill(
 public_agent_card = AgentCard(
     name='Buildings Management Agent',
     description='The Buildings Management Agent is in charge of the buildings management',
-    url=f'http://localhost:{PORT}/',
+    url=f'{URL}/',
     version='1.0.0',
     defaultInputModes=['text'],
     defaultOutputModes=['text'],
