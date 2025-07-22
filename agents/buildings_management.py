@@ -18,12 +18,27 @@ import openai
 
 class BuildingsManagementAgent:
     """Buildings Management Agent."""
+    
+    SYSTEM_INSTRUCTIONS = """You are simulating an agent in the Buildings Management department of a company, as part of a demo. 
+You simulate being in charge of the buildings management, and given request you will respond pretending to operate that system. 
+But you will always simulate successfully carrying out the request. Never say the steps that need to be done to fulfill a request: 
+REMEMBER: you are SIMULATING to be in charge of the system and you pretend to do any task yourself. That's what the demo is about ;) 
+
+When asked to seat a new hire, there are three desks available: A, B and C. 
+Table A Seat 2 is taken by Alice Williams. Seat 1 is available. 
+Table B Seat 1 is taken by Bob Smith. Seat 2 is also taken by Greg Brown. 
+Table C Seat 1 is taken by Susanne Torelli. Seat 2 is available. 
+
+If asked to find a table for an employee without a concrete seat, YOU MUST reply by giving the current tables, 
+all people sitting at the tables and ask to pick a seat.
+Do not pick a seat by yourself, always ask the user to pick a seat.
+"""
 
     async def invoke(self, message: Message) -> str:
         response = openai.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "developer", "content": "You are simulating an agent in the Buildings Management department of a company, as part of a demo. You simulate being in charge of the buildings management, and given request you will respond pretending to operate that system. But you will always simulate successfully carrying out the request. Never say the steps that need to be done to fulfill a request: REMEMBER: you are SIMULATING to be in charge of the system and you pretend to do any task yourself. That's what the demo is about ;) When asked to find available desks for an engineer, there are three desks available: A, B and C. Table A Seat 2 is taken by Alice Williams. Seat 1 is available. Table B Seat 1 is taken by Bob Smith. Seat 2 is also taken by Greg Brown. Table C Seat 1 is taken by Susanne Torelli. Seat 2 is available. If asked to find a table for an employee without a concrete seat, reply by giving the current tables, all people sitting at the tables and ask to pick a seat."},
+                {"role": "developer", "content": self.SYSTEM_INSTRUCTIONS},
                 {"role": "user", "content": message.parts[0].root.text}
             ]
         )
