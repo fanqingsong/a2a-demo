@@ -58,7 +58,7 @@ function Page() {
     });
 
     setChatInstances(newInstances);
-  }, [tabs, addNotification, chatInstances]);
+  }, [tabs, addNotification]);
 
   const handleAddTab = () => {
     const newTab = {
