@@ -17,7 +17,7 @@ from a2a.types import (
 )
 import openai
 
-PORT = os.getenv("PORT", 9999)
+PORT = os.getenv("PORT", "9999")
 
 class FinanceAgent:
     """Finance Agent."""
@@ -88,7 +88,7 @@ def main():
         extended_agent_card=public_agent_card,
     )
 
-    uvicorn.run(server.build(), host='0.0.0.0', port=PORT)
+    uvicorn.run(server.build(), host='0.0.0.0', port=int(PORT))
 
 if __name__ == '__main__':
     main()
