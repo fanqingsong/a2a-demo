@@ -73,7 +73,7 @@ HR Agent → IT: "Implement temporary security measures for server room"
          ▼                       ▼
 ┌─────────────────────────────────────────┐
 │            HR Agent                     │
-│        (Central Coordinator)           │
+│        (Central Coordinator)            │
 └─────────────────────────────────────────┘
          │           │           │
          ▼           ▼           ▼
