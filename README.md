@@ -12,6 +12,12 @@ This demo features an **HR Agent** as the primary interface that can intelligent
 
 The HR agent acts as a central coordinator, automatically routing complex requests to the appropriate specialists and orchestrating multi-departmental workflows.
 
+## 🎬 Demo
+
+![A2A Demo](a2a.gif)
+
+_See the A2A protocol in action as agents seamlessly communicate across departments_
+
 ## 🔗 Protocol Integration
 
 ### AG-UI Protocol
