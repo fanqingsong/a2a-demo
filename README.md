@@ -158,7 +158,7 @@ Each agent's capabilities are defined in their respective Python files in the `a
 ## 📚 Learn More
 
 - [AG-UI Documentation](https://docs.ag-ui.com)
-- [A2A Protocol Specification](https://a2a-protocol.dev)
+- [A2A Protocol Docs](https://a2aprotocol.ai)
 - [CopilotKit Integration Guide](https://docs.copilotkit.ai)
 
 ## 🤝 Contributing
