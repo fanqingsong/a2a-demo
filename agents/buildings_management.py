@@ -20,6 +20,26 @@ import openai
 PORT = os.getenv("PORT", "9997")
 URL = os.getenv("URL", f"http://localhost:{PORT}")
 
+# 配置OpenAI客户端以支持Azure OpenAI
+def get_openai_client():
+    """获取配置好的OpenAI客户端"""
+    # 检查是否使用Azure OpenAI
+    azure_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    azure_api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+    azure_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+    
+    if azure_api_key and azure_endpoint:
+        # 使用Azure OpenAI
+        return openai.AzureOpenAI(
+            api_key=azure_api_key,
+            api_version=azure_api_version,
+            azure_endpoint=azure_endpoint
+        ), azure_deployment or "gpt-4o"
+    else:
+        # 使用标准OpenAI
+        return openai.OpenAI(), "gpt-4o"
+
 class BuildingsManagementAgent:
     """Buildings Management Agent."""
     
@@ -39,8 +59,10 @@ Do not pick a seat by yourself, always ask the user to pick a seat.
 """
 
     async def invoke(self, message: Message) -> str:
-        response = openai.chat.completions.create(
-            model="gpt-4o",
+        client, model = get_openai_client()
+        
+        response = client.chat.completions.create(
+            model=model,
             messages=[
                 {"role": "developer", "content": self.SYSTEM_INSTRUCTIONS},
                 {"role": "user", "content": message.parts[0].root.text}

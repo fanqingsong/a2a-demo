@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # Next.js 前端应用 (开发模式)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME}
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - finance-agent
+      - it-agent
+      - buildings-agent
+    networks:
+      - a2a-network
+    restart: unless-stopped
+    command: ["pnpm", "dev"]
+
+  # Finance Agent 微服务
+  finance-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agents
+    command: ["python", "finance.py"]
+    ports:
+      - "8001:9999"
+    environment:
+      - PORT=9999
+      - URL=http://finance-agent:9999
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME}
+    volumes:
+      - ./agents:/app
+    networks:
+      - a2a-network
+    restart: unless-stopped
+
+  # IT Agent 微服务
+  it-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agents
+    command: ["python", "it.py"]
+    ports:
+      - "8002:9998"
+    environment:
+      - PORT=9998
+      - URL=http://it-agent:9998
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME}
+    volumes:
+      - ./agents:/app
+    networks:
+      - a2a-network
+    restart: unless-stopped
+
+  # Buildings Management Agent 微服务
+  buildings-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agents
+    command: ["python", "buildings_management.py"]
+    ports:
+      - "8003:9997"
+    environment:
+      - PORT=9997
+      - URL=http://buildings-agent:9997
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME}
+    volumes:
+      - ./agents:/app
+    networks:
+      - a2a-network
+    restart: unless-stopped
+
+networks:
+  a2a-network:
+    driver: bridge

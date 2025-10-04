@@ -1,0 +1,23 @@
+# Azure OpenAI 配置示例
+# 请根据您的实际 Azure OpenAI 配置修改以下值
+
+# 注释掉 OpenAI API Key（如果存在）
+# OPENAI_API_KEY=your_openai_api_key_here
+
+# Azure OpenAI 配置
+AZURE_OPENAI_API_KEY=your_azure_api_key_here
+AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com/
+AZURE_OPENAI_API_VERSION=2024-02-15-preview
+AZURE_OPENAI_DEPLOYMENT_NAME=your_deployment_name
+
+# 应用环境配置
+NODE_ENV=production
+
+# 可选：自定义端口配置
+# FRONTEND_PORT=3000
+# FINANCE_AGENT_PORT=8001
+# IT_AGENT_PORT=8002
+# BUILDINGS_AGENT_PORT=8003
+
+# 可选：日志级别
+# LOG_LEVEL=info
